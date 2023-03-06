@@ -6,7 +6,7 @@ document.getElementById("csvForm").addEventListener("submit", function(event) {
     document.getElementById("error-message").style.display = "none";
     let form_data = new FormData(document.getElementById("csvForm"));
     let xhr = new XMLHttpRequest();
-    xhr.open("POST", "{{ url_for('views.upload_file') }}", true);
+    xhr.open("POST", "/upload", true);
     xhr.onload = function (e) {
       document.getElementById("spinner").style.display = "none";
       if (xhr.readyState === 4) {

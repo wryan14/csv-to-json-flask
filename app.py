@@ -1,11 +1,14 @@
 from flask import Flask
-from app import views
+from views import views
 
-app = Flask(__name__)
-app.register_blueprint(views)
-
-# Load configuration settings from config.py
-app.config.from_pyfile('config.py')
+def create_app():
+    app = Flask(__name__)
+    app.register_blueprint(views)
+    # Load configuration settings from config.py
+    app.config.from_pyfile('config.py')
+    return app
 
 if __name__ == '__main__':
+    app = create_app()
     app.run(debug=True)
+
