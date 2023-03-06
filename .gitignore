@@ -1,0 +1,33 @@
+# Flask app files to ignore
+
+# Compiled Python files
+__pycache__/
+*.pyc
+
+# Environment files
+.venv/
+env/
+venv/
+*.env
+
+# Editor files
+.vscode/
+.idea/
+
+# Logs and cache files
+*.log
+*.cache
+
+# Dependencies
+*.egg-info/
+dist/
+build/
+*.egg
+*.eggs
+*.egg-info
+*.eggs-info
+*.tar.gz
+*.whl
+
+# Other
+.DS_Store
