@@ -42,7 +42,7 @@ class ViewsTestCase(unittest.TestCase):
                 data = {'file': (f, 'test.csv'), 'json_option': 'replace'}
                 response = self.client.post('/upload', data=data, content_type='multipart/form-data', buffered=True)
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.data, b'Data saved successfully')
+                self.assertEqual(response.data, b'{\n  "success": "Data saved successfully."\n}\n')
 
             # Test case where json_option is append and data.json exists
             existing_data = [{'name': 'John', 'age': 30}]
@@ -53,7 +53,7 @@ class ViewsTestCase(unittest.TestCase):
                 data = {'file': (f, 'test.csv'), 'json_option': 'append'}
                 response = self.client.post('/upload', data=data, content_type='multipart/form-data', buffered=True)
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.data, b'Data saved successfully')
+                self.assertEqual(response.data, b'{\n  "success": "Data saved successfully."\n}\n')
             with open('data.json', 'r') as f:
                 data = json.load(f)
                 self.assertEqual(len(data), 2)
@@ -67,7 +67,7 @@ class ViewsTestCase(unittest.TestCase):
                 data = {'file': (f, 'test.csv'), 'json_option': 'append'}
                 response = self.client.post('/upload', data=data, content_type='multipart/form-data', buffered=True)
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.data, b'Data saved successfully')
+                self.assertEqual(response.data, b'{\n  "success": "Data saved successfully."\n}\n')
             with open('data.json', 'r') as f:
                 data = json.load(f)
                 self.assertEqual(len(data), 2)
