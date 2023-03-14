@@ -1,7 +1,6 @@
 import json
 import os
-import pandas as pd
-from flask import render_template, request, jsonify, current_app, redirect, url_for
+from flask import render_template, request, jsonify, current_app
 from .helpers import read_csv
 from flask import Blueprint
 
@@ -15,7 +14,13 @@ def index():
 @views.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files['file']
-    data = read_csv(file)
+    _, extension = os.path.splitext(file.filename)
+    if extension != '.csv':
+        return jsonify({'error': 'Invalid file type. The file must be a CSV.'}), 400
+    try:
+        data = read_csv(file, encoding='utf-8')
+    except UnicodeDecodeError:
+        data = read_csv(file, encoding='cp1252')
     json_option = request.form.get('json_option', 'replace')
     filename = os.path.join(current_app.static_folder, 'data.json')
     if json_option == 'replace':
@@ -23,16 +28,15 @@ def upload_file():
             json.dump(data, f)
     elif json_option == 'append':
         try:
-            with open(filename, 'r') as f:
+            with open(filename, 'r', encoding='utf-8') as f:
                 existing_data = json.load(f)
         except FileNotFoundError:
             existing_data = []
-        combined_data = {}
-        for dictionary in existing_data + data:
-            combined_data.update(dictionary)
+        combined_data = existing_data+data
         with open(filename, 'w') as f:
             json.dump(combined_data, f)
-    return 'Data saved successfully'
+    return jsonify({'success': 'Data saved successfully.'}), 200
+
 
 @views.route('/api/search')
 def search():
@@ -59,7 +63,7 @@ def search():
 @views.route('/api-table')
 def data_table():
     filename = os.path.join(current_app.static_folder, 'data.json')
-    with open(filename, 'r') as f:
+    with open(filename, 'r', encoding='utf-8') as f:
         data = json.load(f)
     # Extract column names from the JSON data
     columns = [{'data': key} for key in data[0].keys()]
