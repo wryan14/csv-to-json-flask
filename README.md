@@ -4,7 +4,7 @@ This Flask application converts CSV files to JSON data and exposes it through a 
 
 ## Installation
 
-1. Clone the repository: `git clone https://github.com/yourusername/csv-to-json-flask.git`
+1. Clone the repository: `git clone https://github.com/wryan14/csv-to-json-flask.git`
 2. Install the required packages: `pip install -r requirements.txt`
 3. Run the app: `python app.py`
 
