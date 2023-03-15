@@ -31,11 +31,13 @@ The File Manager provides an easy way for users to manage the JSON files generat
 
 ## Search API
 
-This API provides a search functionality for filtering JSON data based on keywords, fields, and keys.
+This API endpoint allows users to search for data in a JSON file that has been uploaded through the app. By default, the endpoint looks for a file called "data.json" in the app's static folder. However, users can specify a different filename by including it in the URL (e.g., "/api/data/myfile/search").
+
+If the specified file exists, the endpoint loads its contents into memory and searches for data based on the provided search parameters (i.e., a search query, fields to search in, and keys to filter by). If no search parameters are provided, the entire dataset is returned. The endpoint then returns the search results as a JSON response. If the specified file does not exist, the endpoint returns an error message.
 
 ### API Endpoint
 
-`/api/search`
+`/api/data/<filename>/search`
 
 #### Parameters
 
@@ -47,31 +49,31 @@ This API provides a search functionality for filtering JSON data based on keywor
 
 1. Get all data without any filters:
 
-`/api/search`
+`/api/data/<filename>/search`
 
 
 2. Filter data based on a keyword:
 
-`/api/search?q=example`
+`/api/data/<filename>/search?q=example`
 
 
 3. Filter data based on a keyword in specific fields:
 
-`/api/search?q=example&field=title,description`
+`/api/data/<filename>/search?q=example&field=title,description`
 
 
 4. Filter data based on a key:
 
-`/api/search?key=example_key`
+`/api/data/<filename>/search?key=example_key`
 
 
 5. Filter data based on a keyword in specific fields and a key:
 
-`/api/search?q=example&field=title,description&key=example_key`
+`/api/data/<filename>/search?q=example&field=title,description&key=example_key`
 
 #### Example
 
-Suppose we have a JSON data file containing information about products, including their name, price, and category:
+Suppose we have a JSON data file called myfile.json containing information about products, including their name, price, and category:
 
 ```
 [
@@ -101,7 +103,7 @@ Suppose we have a JSON data file containing information about products, includin
 We can use the search API to filter this data based on various criteria. For example:
 
 To get all products in category 1:
-`/api/search?field=category&q=Category%201`
+`/api/data/myfile/search?field=category&q=Category%201`
 
 This will return the following JSON response:
 
@@ -122,7 +124,7 @@ This will return the following JSON response:
 ```
 
 To get all products with a price greater than 20:
-`/api/search?q=20&field=price`
+`/api/data/myfile/search?q=20&field=price`
 
 This will return the following JSON response:
 
@@ -142,7 +144,7 @@ This will return the following JSON response:
 ```
 
 To get the names and prices of all products in category 2:
-`/api/search?key=name,price&field=category&q=Category%202`
+`/api/data/myfile/search?key=name,price&field=category&q=Category%202`
 
 This will return the following JSON response:
 

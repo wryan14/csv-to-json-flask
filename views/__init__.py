@@ -88,14 +88,12 @@ def file_manager():
     return render_template('file_manager.html')
 
 
-@views.route('/api/data/search')
-@views.route('/api/data/<filename>/search')
-def search(filename='data'):
+@views.route('/api/search')
+def search():
     """
     Search API endpoint that returns results from a JSON data file.
 
     Args:
-        filename (str): The filename of the JSON data file (default: 'data').
         q (str): The search query (keyword) to filter the results (default: None).
         field (str): The field(s) to search in, separated by commas. If not provided or empty string, all fields are searched (default: None).
         key (str): The key(s) to filter the results, separated by commas. If not provided or empty string, all items are returned (default: None).
@@ -106,12 +104,13 @@ def search(filename='data'):
     Raises:
         None
     """
-    filename = f'{filename}.json'
-    filepath = os.path.join(current_app.static_folder, filename)
-    if not os.path.isfile(filepath):
-        error_msg = f'Error: {filename} file not found.'
-        return render_template('no-data.html', error_msg=error_msg)
-    with open(filepath) as f:
+    filename = os.path.join(current_app.static_folder, 'data.json')
+    if not os.path.isfile(filename):
+        response = requests.get(url_for('views.list_files', _external=True))
+        response = response.json()['files']
+        response = [x.split('.json')[0] for x in response]
+        return render_template('no-data.html', files=response)
+    with open(filename) as f:
         data = json.load(f)
 
     search_query = request.args.get('q', '').strip().lower()
