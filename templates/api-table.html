@@ -1,27 +1,59 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container mt-3">
-    <h1 class="mb-3">Data Table</h1>
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            {% for column in columns %}
-              <th>{{ column.data }}</th>
-            {% endfor %}
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in data_list %}
-            <tr>
-              {% for value in row %}
-                <td>{{ value }}</td>
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+<div class="container mt-3">
+  {% set filename_parts = filename.split('=') %}
+  {% if filename_parts|length >= 2 %}
+  <h1 class="mb-3">{{ filename_parts[1].split('.')[0] }}</h1>
+  {% endif %}
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <label for="json_file_select" class="form-label">Select a JSON file:</label>
+    </div>
+    <div class="col-md-8">
+      <ul class="list-unstyled d-flex justify-content-start">
+        {% for file in json_files %}
+        <li class="me-3">
+          <a href="{{ url_for('views.data_table', filename=file) }}" class="btn btn-primary">{{ file }}</a>
+        </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          {% for column in columns %}
+          <th>{{ column.data }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data_list %}
+        <tr>
+          {% for value in row %}
+          <td>{{ value }}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+ 
+  const filename = window.location.search;
+
+  // Add an 'active' class to the link with the current filename
+  const links = document.querySelectorAll('a.btn');
+  links.forEach(link => {
+    if (link.getAttribute('href') === window.location.pathname + filename) {
+      link.classList.add('active');
+    }
+  });
+
+</script>
+
 {% endblock %}

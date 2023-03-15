@@ -2,7 +2,8 @@
 import json
 import os
 import glob
-from flask import render_template, request, jsonify, current_app
+import requests
+from flask import render_template, request, jsonify, current_app, url_for
 from .helpers import read_csv
 from flask import Blueprint, make_response
 
@@ -14,6 +15,7 @@ def index():
     """Render the index page."""
     return render_template('index.html')
 
+@views.route('/upload', methods=['POST'])
 def upload_file():
     """Handle file upload and convert to JSON.
 
@@ -41,7 +43,6 @@ def upload_file():
         json.dump(data, f)
 
     return jsonify({'success': 'Data saved successfully.'}), 200
-
 
 
 @views.route('/list_files', methods=['GET'])
@@ -85,7 +86,6 @@ def file_manager():
         The rendered HTML for the file manager page.
     """
     return render_template('file_manager.html')
-
 
 
 @views.route('/api/search')
@@ -151,7 +151,6 @@ def search():
     return jsonify(results), 200, {'Content-Type': 'application/json'}
 
 
-
 @views.route('/api-table')
 def data_table():
     """
@@ -166,10 +165,17 @@ def data_table():
     Raises:
         None
     """
-    filename = os.path.join(current_app.static_folder, 'data.json')
-    if not os.path.isfile(filename):
-        error_msg = 'Error: data file not found.'
+    # Get the list of JSON files in the static folder
+    json_files = os.listdir(current_app.static_folder)
+    json_files = [file for file in json_files if file.endswith('.json')]
+
+    if not json_files:
+        error_msg = 'Error: no JSON files found in the static folder.'
         return render_template('api-table.html', error_msg=error_msg)
+
+    # Set the filename to the first available JSON file
+    filename_param = json_files[0]
+    filename = os.path.join(current_app.static_folder, filename_param)
 
     with open(filename, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -180,5 +186,13 @@ def data_table():
     # Convert data to a list of lists for use in the template
     data_list = [list(row.values()) for row in data]
 
-    return render_template('api-table.html', columns=columns, data_list=data_list)
+    # Get the list of JSON files in the static folder
+    response = requests.get(url_for('views.list_files', _external=True))
+    if response.status_code != 200:
+        error_msg = 'Error: could not retrieve list of JSON files.'
+        return render_template('api-table.html', error_msg=error_msg)
+    json_files = response.json()['files']
+
+    return render_template('api-table.html', columns=columns, data_list=data_list, json_files=json_files, filename=filename_param)
+
 
