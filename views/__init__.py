@@ -3,9 +3,9 @@ import json
 import os
 import glob
 import requests
-from flask import render_template, request, jsonify, current_app, url_for
+from flask import render_template, request, jsonify, current_app, url_for, redirect
 from .helpers import read_csv
-from flask import Blueprint, make_response
+from flask import Blueprint
 
 views = Blueprint('views', __name__)
 
@@ -99,15 +99,21 @@ def search(filename='data'):
         field (str): The field(s) to search in, separated by commas. If not provided or empty string, all fields are searched (default: None).
         key (str): The key(s) to filter the results, separated by commas. If not provided or empty string, all items are returned (default: None).
     Returns:
-        A JSON response containing search results.
+        A JSON response containing search results or redirect to api-query-examples.html.html if the JSON data file does not exist or search results are empty.
     Raises:
         None
     """
     filename = f'{filename}.json'
     filepath = os.path.join(current_app.static_folder, filename)
     if not os.path.isfile(filepath):
-        error_msg = f'Error: {filename} file not found.'
-        return render_template('no-data.html', error_msg=error_msg)
+        if not os.path.isfile(filename):
+            response = requests.get(url_for('views.list_files', _external=True))
+            response = response.json()['files']
+            response = [x.split('.json')[0] for x in response]
+            return render_template('api-query-examples.html', files=response)
+        else:
+            return render_template('api-query-examples.html', files=[filename.split('.json')[0]])
+
     with open(filepath) as f:
         data = json.load(f)
 
@@ -148,7 +154,11 @@ def search(filename='data'):
                 else:
                     results.append(item)
 
+    if not results:
+        return jsonify({})
+
     return jsonify(results), 200, {'Content-Type': 'application/json'}
+
 
 @views.route('/api-table')
 def data_table():
@@ -169,21 +179,24 @@ def data_table():
     json_files = [file for file in json_files if file.endswith('.json')]
 
     if not json_files:
-        error_msg = 'Error: no JSON files found in the static folder.'
-        return render_template('api-table.html', error_msg=error_msg)
+        return render_template('data-unavailable.html')
 
     # Set the filename to the first available JSON file
     filename_param = json_files[0]
     filename = os.path.join(current_app.static_folder, filename_param)
 
-    with open(filename, 'r', encoding='utf-8') as f:
-        data = json.load(f)
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            data = json.load(f)
 
-    # Extract column names from the JSON data
-    columns = [{'data': key} for key in data[0].keys()]
+        # Extract column names from the JSON data
+        columns = [{'data': key} for key in data[0].keys()]
 
-    # Convert data to a list of lists for use in the template
-    data_list = [list(row.values()) for row in data]
+        # Convert data to a list of lists for use in the template
+        data_list = [list(row.values()) for row in data]
+    except FileNotFoundError:
+        error_msg = f'Error: could not find data file {filename_param}.'
+        return render_template('api-table.html', error_msg=error_msg)
 
     # Get the list of JSON files in the static folder
     response = requests.get(url_for('views.list_files', _external=True))
