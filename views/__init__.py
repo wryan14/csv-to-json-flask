@@ -1,9 +1,10 @@
 """View for main application"""
 import json
 import os
+import glob
 from flask import render_template, request, jsonify, current_app
 from .helpers import read_csv
-from flask import Blueprint
+from flask import Blueprint, make_response
 
 views = Blueprint('views', __name__)
 
@@ -13,8 +14,6 @@ def index():
     """Render the index page."""
     return render_template('index.html')
 
-
-@views.route('/upload', methods=['POST'])
 def upload_file():
     """Handle file upload and convert to JSON.
 
@@ -29,21 +28,65 @@ def upload_file():
         data = read_csv(file, encoding='utf-8')
     except UnicodeDecodeError:
         data = read_csv(file, encoding='cp1252')
-    json_option = request.form.get('json_option', 'replace')
-    filename = os.path.join(current_app.static_folder, 'data.json')
-    if json_option == 'replace':
-        with open(filename, 'w') as f:
-            json.dump(data, f)
-    elif json_option == 'append':
-        try:
-            with open(filename, 'r', encoding='utf-8') as f:
-                existing_data = json.load(f)
-        except FileNotFoundError:
-            existing_data = []
-        combined_data = existing_data+data
-        with open(filename, 'w') as f:
-            json.dump(combined_data, f)
+    
+    custom_filename = request.form.get('custom_filename', 'data.json')
+    if not custom_filename.endswith('.json'):
+        custom_filename += '.json'
+        if custom_filename == '.json':
+            custom_filename = 'data.json'
+    
+    filename = os.path.join(current_app.static_folder, custom_filename)
+
+    with open(filename, 'w') as f:
+        json.dump(data, f)
+
     return jsonify({'success': 'Data saved successfully.'}), 200
+
+
+
+@views.route('/list_files', methods=['GET'])
+def list_files():
+    """Get the list of JSON files in the static folder.
+
+    Returns:
+        A JSON response containing the list of JSON files.
+    """
+    static_folder = current_app.static_folder
+    json_files = glob.glob(os.path.join(static_folder, '*.json'))
+    json_files = [os.path.basename(file) for file in json_files]
+
+    return jsonify({'files': json_files}), 200
+
+@views.route('/delete_file', methods=['POST'])
+def delete_file():
+    """Delete a JSON file from the static folder.
+
+    Returns:
+        A JSON response indicating success or failure.
+    """
+    filename = request.form.get('filename')
+    if not filename:
+        return jsonify({'error': 'Filename is missing.'}), 400
+
+    file_path = os.path.join(current_app.static_folder, filename)
+    if not os.path.isfile(file_path):
+        return jsonify({'error': 'File not found.'}), 404
+
+    os.remove(file_path)
+    return jsonify({'success': 'File deleted successfully.'}), 200
+
+@views.route('/file_manager', methods=['GET'])
+def file_manager():
+    """
+    Render the file manager page, which allows users to view and delete JSON files
+    in the Flask application's static folder.
+
+    Returns:
+        The rendered HTML for the file manager page.
+    """
+    return render_template('file_manager.html')
+
+
 
 @views.route('/api/search')
 def search():
@@ -62,6 +105,9 @@ def search():
         None
     """
     filename = os.path.join(current_app.static_folder, 'data.json')
+    if not os.path.isfile(filename):
+        error_msg = 'Error: data file not found.'
+        return render_template('no-data.html', error_msg=error_msg)
     with open(filename) as f:
         data = json.load(f)
 
@@ -115,16 +161,24 @@ def data_table():
         None
 
     Returns:
-        A rendered HTML template containing a table of columns and data.
+        A rendered HTML template containing a table of columns and data, or an error message.
 
     Raises:
         None
     """
     filename = os.path.join(current_app.static_folder, 'data.json')
+    if not os.path.isfile(filename):
+        error_msg = 'Error: data file not found.'
+        return render_template('api-table.html', error_msg=error_msg)
+
     with open(filename, 'r', encoding='utf-8') as f:
         data = json.load(f)
+
     # Extract column names from the JSON data
     columns = [{'data': key} for key in data[0].keys()]
+
     # Convert data to a list of lists for use in the template
     data_list = [list(row.values()) for row in data]
+
     return render_template('api-table.html', columns=columns, data_list=data_list)
+

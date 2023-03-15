@@ -3,7 +3,6 @@
 {% block title %}CSV to JSON Converter{% endblock %}
 
 {% block content %}
-
   <div class="container mt-5">
     <div class="row justify-content-center">
       <div class="col-lg-8 col-md-10">
@@ -15,17 +14,10 @@
             <small class="form-text text-muted">Maximum file size is 1MB.</small>
             <div class="invalid-feedback">Please select a valid CSV file.</div>
           </div>
-          <div class="form-check mb-4">
-            <input class="form-check-input" type="radio" name="json_option" id="replaceRadio" value="replace" checked aria-labelledby="replaceLabel">
-            <label class="form-check-label" for="replaceRadio" id="replaceLabel">
-              Replace existing data
-            </label>
-          </div>
-          <div class="form-check mb-4">
-            <input class="form-check-input" type="radio" name="json_option" id="appendRadio" value="append" aria-labelledby="appendLabel">
-            <label class="form-check-label" for="appendRadio" id="appendLabel">
-              Append to existing data
-            </label>
+          <div class="form-group mb-4">
+            <label for="customFilename">Save as (optional):</label>
+            <input type="text" class="form-control" id="customFilename" name="custom_filename" placeholder="Enter a custom filename (e.g., my_data.json)">
+            <small class="form-text text-muted">The file will be saved with the .json extension.</small>
           </div>
           <div class="d-grid gap-3">
             <button type="submit" class="btn btn-primary btn-lg">Convert to JSON</button>
