@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}List and Delete Files{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h1>List and Delete Files</h1>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Filename</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="fileListBody">
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Function to delete a file
+    function deleteFile(filename) {
+      // Send an AJAX request to the server to delete the file
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "{{ url_for('views.delete_file') }}");
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          // Reload the file list
+          getFileList();
+        } else {
+          alert("Error: " + xhr.responseText);
+        }
+      };
+      xhr.send("filename=" + encodeURIComponent(filename));
+    }
+
+    // Function to generate the HTML for a delete button
+    function getDeleteButton(filename) {
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "btn btn-danger btn-sm";
+      button.innerText = "Delete";
+      button.addEventListener("click", function() {
+        if (confirm("Are you sure you want to delete " + filename + "?")) {
+          deleteFile(filename);
+        }
+      });
+      return button;
+    }
+
+    // Function to generate the HTML for a table row
+    function getFileListRow(filename) {
+      var row = document.createElement("tr");
+      var filenameCell = document.createElement("td");
+      filenameCell.innerText = filename;
+      var actionsCell = document.createElement("td");
+      actionsCell.appendChild(getDeleteButton(filename));
+      row.appendChild(filenameCell);
+      row.appendChild(actionsCell);
+      return row;
+    }
+
+    // Function to fetch the file list from the server and update the table
+    function getFileList() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "{{ url_for('views.list_files') }}");
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          var fileList = JSON.parse(xhr.responseText).files;
+          var fileListBody = document.getElementById("fileListBody");
+          fileListBody.innerHTML = "";
+          fileList.forEach(function(filename) {
+            fileListBody.appendChild(getFileListRow(filename));
+          });
+        } else {
+          alert("Error: " + xhr.responseText);
+        }
+      };
+      xhr.send();
+    }
+
+    // Call getFileList on page load
+    getFileList();
+  </script>
+{% endblock %}

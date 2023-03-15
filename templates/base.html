@@ -17,10 +17,13 @@
 			<div class="collapse navbar-collapse" id="navbarNav">
 				<ul class="navbar-nav ml-auto">
 					<li class="nav-item">
-						<a class="nav-link" href="{{ url_for('views.data_table') }}">API Table</a>
+						<a class="nav-link" href="{{ url_for('views.data_table', filename='data.json') }}">API Table</a>
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="{{ url_for('views.search') }}">API Search</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="{{ url_for('views.file_manager') }}">File Manager</a>
 					</li>
 				</ul>
 			</div>
@@ -42,5 +45,5 @@
 
 <!-- Custom scripts -->
 <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
-
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
 </html>

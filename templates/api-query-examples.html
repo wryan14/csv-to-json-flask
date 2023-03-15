@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mt-3">
+    <h1>Example API Query URLs</h1>
+    <p>This table provides examples of how to structure your API query for each collection.</p>
+    <p>Please note that the links are not clickable and will not actually resolve. They are provided solely as examples. For further help on structuring the API string, please refer to our README file.</p>
+    
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Search all fields</th>
+          <th>Search specific fields</th>
+          <th>Search with keyword</th>
+          <th>Search with keyword and specific fields</th>
+          <th>Filter specific keys</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in files %}
+        <tr>
+          <td>{{ file }}</td>
+          <td><a href="#" onclick="return false;">/api/data/{{ file }}/search</a></td>
+          <td><a href="#" onclick="return false;">/api/data/{{ file }}/search?field=name,age</a></td>
+          <td><a href="#" onclick="return false;">/api/data/{{ file }}/search?q=john</a></td>
+          <td><a href="#" onclick="return false;">/api/data/{{ file }}/search?q=john&amp;field=name,age</a></td>
+          <td><a href="#" onclick="return false;">/api/data/{{ file }}/search?key=name,age</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
