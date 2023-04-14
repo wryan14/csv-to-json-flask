@@ -181,8 +181,12 @@ def data_table():
     if not json_files:
         return render_template('data-unavailable.html')
 
-    # Set the filename to the first available JSON file
-    filename_param = json_files[0]
+    # Get the filename parameter from the URL
+    filename_param = request.args.get('filename')
+
+    if filename_param is None or filename_param not in json_files:
+        filename_param = json_files[0]
+
     filename = os.path.join(current_app.static_folder, filename_param)
 
     try:
@@ -206,5 +210,3 @@ def data_table():
     json_files = response.json()['files']
 
     return render_template('api-table.html', columns=columns, data_list=data_list, json_files=json_files, filename=filename_param)
-
-
